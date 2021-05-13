@@ -118,11 +118,14 @@ public class HostReactor implements Closeable {
     /**
      * subscribe instancesChangeEvent.
      *
+     * 把注册表信息更新作为事件向外部开放，naming可以主动订阅该事件，监控注册表的变化，也可以取消订阅
+     *
      * @param serviceName   combineServiceName, such as 'xxx@@xxx'
      * @param clusters      clusters, concat by ','. such as 'xxx,yyy'
      * @param eventListener custom listener
      */
     public void subscribe(String serviceName, String clusters, EventListener eventListener) {
+        //todo jfy 事件注册和监听 是nacos的核心处理逻辑 存在统一事件通知中心NotifyCenter
         notifier.registerListener(serviceName, clusters, eventListener);
         getServiceInfo(serviceName, clusters);
     }
@@ -144,6 +147,8 @@ public class HostReactor implements Closeable {
 
     /**
      * Process service json.
+     *
+     *
      *
      * @param json service json
      * @return service info
@@ -362,9 +367,11 @@ public class HostReactor implements Closeable {
         ServiceInfo oldService = getServiceInfo0(serviceName, clusters);
         try {
 
+            //从服务端查询客户端注册表
             String result = serverProxy.queryList(serviceName, clusters, pushReceiver.getUdpPort(), false);
 
             if (StringUtils.isNotEmpty(result)) {
+                // 把注册表信息转成json并缓存到本地磁盘
                 processServiceJson(result);
             }
         } finally {
@@ -401,6 +408,9 @@ public class HostReactor implements Closeable {
         NAMING_LOGGER.info("{} do shutdown stop", className);
     }
 
+    /**
+     * 定时更新注册表本地缓存文件  从服务端定时拉取
+     */
     public class UpdateTask implements Runnable {
 
         long lastRefTime = Long.MAX_VALUE;

@@ -81,10 +81,20 @@ public class RegisterInstance_ITCase {
     }
 
     /**
-     * jfy 客户端注册自身的serverName IP port clusterName给服务端，
-     * 客户端注册有多个重载方法，默认Group是DEFAULT_GROUP
+     *
+     * 客户端根据系统属性properties初始化一个NacosNamingService实例naming
+     * naming实例中有三个属性serverProxy beatReactor hostReactor 分别是服务端代理、心跳反应器、主机反应器
+     * serverProxy 负责向服务端注册客户端实例
+     * beatReactor 负责维护客户端和服务端的心跳反应
+     * hostReactor 负责和客户端主机交互，缓存注册表等信息
+     *
+     *
+     *
+     * 客户端根据服务端的属性配置serverName server_IP server_port server_clusterName注册服务代理，
+     * 客户端注册服务代理有多个重载方法，默认Group是DEFAULT_GROUP
      * 初始化instance信息
      * 创建心跳任务，客户端通过把心跳信息封装成任务，然后通过定时任务发送心跳给服务端
+     *
      * 封装客户端instance信息发送给服务端
      *
      * 注：客户端和服务端的通信都是通过http进行的

@@ -26,23 +26,21 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ServiceInfoTest {
-    
+
     private ObjectMapper mapper;
-    
+
     private ServiceInfo serviceInfo;
-    
+
     @Before
     public void setUp() throws Exception {
         mapper = new ObjectMapper();
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         serviceInfo = new ServiceInfo("G@@testName", "testClusters");
     }
-    
+
     @Test
     public void testSerialize() throws JsonProcessingException {
         String actual = mapper.writeValueAsString(serviceInfo);
@@ -58,7 +56,7 @@ public class ServiceInfoTest {
         assertFalse(actual.contains("key"));
         assertFalse(actual.contains("keyEncoded"));
     }
-    
+
     @Test
     public void testDeserialize() throws IOException {
         String example = "{\"name\":\"G@@testName\",\"clusters\":\"testClusters\",\"cacheMillis\":1000,\"hosts\":[],"
@@ -74,13 +72,13 @@ public class ServiceInfoTest {
         assertTrue(actual.isValid());
         assertFalse(actual.isAllIPs());
     }
-    
+
     @Test
     public void testGetKey() {
         String key = serviceInfo.getKey();
         assertEquals("G@@testName@@testClusters", key);
     }
-    
+
     @Test
     public void testGetKeyEncode() {
         String key = serviceInfo.getKeyEncoded();
@@ -92,7 +90,7 @@ public class ServiceInfoTest {
         }
         assertEquals(key, ServiceInfo.getKey(encodeName, "testClusters"));
     }
-    
+
     @Test
     public void testServiceInfoConstructor() {
         String key1 = "group@@name";

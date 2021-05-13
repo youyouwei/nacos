@@ -31,30 +31,26 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import javax.servlet.ServletContext;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ServerMemberManagerTest {
-    
+
     @Mock
     private ConfigurableEnvironment environment;
-    
+
     @Mock
     private ServletContext servletContext;
-    
+
     @Mock
     private EventPublisher eventPublisher;
-    
+
     private ServerMemberManager serverMemberManager;
-    
+
     private static final AtomicBoolean EVENT_PUBLISH = new AtomicBoolean(false);
-    
+
     @Before
     public void setUp() throws Exception {
         when(environment.getProperty("server.port", Integer.class, 8848)).thenReturn(8848);
@@ -66,20 +62,20 @@ public class ServerMemberManagerTest {
         serverMemberManager.getMemberAddressInfos().add("1.1.1.1:8848");
         NotifyCenter.getPublisherMap().put(MembersChangeEvent.class.getCanonicalName(), eventPublisher);
     }
-    
+
     @After
     public void tearDown() throws NacosException {
         EVENT_PUBLISH.set(false);
         NotifyCenter.deregisterPublisher(MembersChangeEvent.class);
         serverMemberManager.shutdown();
     }
-    
+
     @Test
     public void testUpdateNonExistMember() {
         Member newMember = Member.builder().ip("1.1.1.2").port(8848).state(NodeState.UP).build();
         assertFalse(serverMemberManager.update(newMember));
     }
-    
+
     @Test
     public void testUpdateDownMember() {
         Member newMember = Member.builder().ip("1.1.1.1").port(8848).state(NodeState.DOWN).build();
@@ -87,7 +83,7 @@ public class ServerMemberManagerTest {
         assertFalse(serverMemberManager.getMemberAddressInfos().contains("1.1.1.1:8848"));
         verify(eventPublisher).publish(any(MembersChangeEvent.class));
     }
-    
+
     @Test
     public void testUpdateVersionMember() {
         Member newMember = Member.builder().ip("1.1.1.1").port(8848).state(NodeState.UP).build();
@@ -98,7 +94,7 @@ public class ServerMemberManagerTest {
                 serverMemberManager.getServerList().get("1.1.1.1:8848").getExtendVal(MemberMetaDataConstants.VERSION));
         verify(eventPublisher).publish(any(MembersChangeEvent.class));
     }
-    
+
     @Test
     public void testUpdateNonBasicExtendInfoMember() {
         Member newMember = Member.builder().ip("1.1.1.1").port(8848).state(NodeState.UP).build();

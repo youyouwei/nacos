@@ -16,11 +16,7 @@
 
 package com.alibaba.nacos.client.naming.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Provides utility methods and decorators for {@link Collection} instances.
@@ -42,18 +38,18 @@ import java.util.Map;
  * @since Commons Collections 1.0
  */
 public class CollectionUtils {
-    
+
     /**
      * Constant to avoid repeated object creation.
      */
     private static final Integer INTEGER_ONE = 1;
-    
+
     /**
      * <code>CollectionUtils</code> should not normally be instantiated.
      */
     public CollectionUtils() {
     }
-    
+
     /**
      * Returns a new {@link Collection} containing <tt><i>a</i> - <i>b</i></tt>. The cardinality of each element
      * <i>e</i> in the returned {@link Collection} will be the cardinality of <i>e</i> in <i>a</i> minus the
@@ -71,7 +67,7 @@ public class CollectionUtils {
         }
         return list;
     }
-    
+
     /**
      * Returns a {@link Map} mapping each unique element in the given {@link Collection} to an {@link Integer}
      * representing the number of occurrences of that element in the {@link Collection}.
@@ -94,7 +90,7 @@ public class CollectionUtils {
         }
         return count;
     }
-    
+
     /**
      * Returns <tt>true</tt> iff the given {@link Collection}s contain exactly the same elements with exactly the same
      * cardinalities.
@@ -126,9 +122,9 @@ public class CollectionUtils {
             }
         }
     }
-    
+
     //-----------------------------------------------------------------------
-    
+
     /**
      * Null-safe check if the specified collection is empty.
      *
@@ -141,7 +137,7 @@ public class CollectionUtils {
     public static boolean isEmpty(Collection coll) {
         return (coll == null || coll.isEmpty());
     }
-    
+
     private static int getFreq(final Object obj, final Map freqMap) {
         Integer count = (Integer) freqMap.get(obj);
         if (count != null) {

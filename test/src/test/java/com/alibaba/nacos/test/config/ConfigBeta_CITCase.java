@@ -21,11 +21,7 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.common.utils.ThreadUtils;
 import com.alibaba.nacos.test.base.Params;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -63,7 +59,7 @@ public class ConfigBeta_CITCase {
     String tenant = "dungu";
     String content = "test";
     String appName = "nacos";
-    
+
     @BeforeClass
     @AfterClass
     public static void cleanClientCache() throws Exception {
@@ -282,7 +278,7 @@ public class ConfigBeta_CITCase {
         System.out.println("deleteBetaConfig get : " + response);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
         Assert.assertEquals("com.dungu.test", JacksonUtils.toObj(response.getBody()).get("data").get("dataId").asText());
-    
+
         response = request(CONFIG_CONTROLLER_PATH + "/configs?beta=true",
             Params.newParams()
                 .appendParam("dataId", dataId)

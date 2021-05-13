@@ -17,8 +17,8 @@
 package com.alibaba.nacos.client.config.impl;
 
 import com.alibaba.nacos.api.common.Constants;
-import com.alibaba.nacos.common.codec.Base64;
 import com.alibaba.nacos.client.identify.CredentialService;
+import com.alibaba.nacos.common.codec.Base64;
 import com.alibaba.nacos.common.utils.StringUtils;
 
 import javax.crypto.Mac;
@@ -54,7 +54,7 @@ public class SpasAdapter {
         if (null == paramValues) {
             return null;
         }
-        
+
         String resource = "";
         if (paramValues.containsKey(TENANT_KEY) && paramValues.containsKey(GROUP_KEY)) {
             resource = paramValues.get(TENANT_KEY) + "+" + paramValues.get(GROUP_KEY);
@@ -65,15 +65,15 @@ public class SpasAdapter {
         }
         return getSignHeaders(resource, secretKey);
     }
-    
+
     public static String getSk() {
         return CredentialService.getInstance().getCredential().getSecretKey();
     }
-    
+
     public static String getAk() {
         return CredentialService.getInstance().getCredential().getAccessKey();
     }
-    
+
     /**
      * Sign with hmac SHA1 encrtpt.
      *
@@ -98,8 +98,8 @@ public class SpasAdapter {
             throw new RuntimeException("signWithhmacSHA1Encrypt fail", e);
         }
     }
-    
+
     private static final String GROUP_KEY = "group";
-    
+
     public static final String TENANT_KEY = "tenant";
 }

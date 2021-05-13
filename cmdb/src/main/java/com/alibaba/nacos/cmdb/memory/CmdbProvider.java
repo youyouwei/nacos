@@ -31,13 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -49,45 +43,45 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 public class CmdbProvider implements CmdbReader, CmdbWriter {
-    
+
     @Autowired
     private SwitchAndOptions switches;
-    
+
     private CmdbService cmdbService;
-    
+
     private final ServiceLoader<CmdbService> serviceLoader = ServiceLoader.load(CmdbService.class);
-    
+
     private Map<String, Map<String, Entity>> entityMap = new ConcurrentHashMap<>();
-    
+
     private Map<String, Label> labelMap = new ConcurrentHashMap<>();
-    
+
     private Set<String> entityTypeSet = new HashSet<>();
-    
+
     private long eventTimestamp = System.currentTimeMillis();
-    
+
     public CmdbProvider() throws NacosException {
     }
-    
+
     private void initCmdbService() throws NacosException {
         Iterator<CmdbService> iterator = serviceLoader.iterator();
         if (iterator.hasNext()) {
             cmdbService = iterator.next();
         }
-        
+
         if (cmdbService == null && switches.isLoadDataAtStart()) {
             throw new NacosException(NacosException.SERVER_ERROR, "Cannot initialize CmdbService!");
         }
     }
-    
+
     /**
      * load data.
      */
     public void load() {
-        
+
         if (!switches.isLoadDataAtStart()) {
             return;
         }
-        
+
         // init label map:
         Set<String> labelNames = cmdbService.getLabelNames();
         if (labelNames == null || labelNames.isEmpty()) {
@@ -98,14 +92,14 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
                 labelMap.put(labelName, cmdbService.getLabel(labelName));
             }
         }
-        
+
         // init entity type set:
         entityTypeSet = cmdbService.getEntityTypes();
-        
+
         // init entity map:
         entityMap = cmdbService.getAllEntities();
     }
-    
+
     /**
      * Init, called by spring.
      *
@@ -113,15 +107,15 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
      */
     @PostConstruct
     public void init() throws NacosException {
-        
+
         initCmdbService();
         load();
-        
+
         CmdbExecutor.scheduleCmdbTask(new CmdbDumpTask(), switches.getDumpTaskInterval(), TimeUnit.SECONDS);
         CmdbExecutor.scheduleCmdbTask(new CmdbLabelTask(), switches.getLabelTaskInterval(), TimeUnit.SECONDS);
         CmdbExecutor.scheduleCmdbTask(new CmdbEventTask(), switches.getEventTaskInterval(), TimeUnit.SECONDS);
     }
-    
+
     @Override
     public Entity queryEntity(String entityName, String entityType) {
         if (!entityMap.containsKey(entityType)) {
@@ -129,7 +123,7 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
         }
         return entityMap.get(entityType).get(entityName);
     }
-    
+
     @Override
     public String queryLabel(String entityName, String entityType, String labelName) {
         Entity entity = queryEntity(entityName, entityType);
@@ -138,12 +132,12 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
         }
         return entity.getLabels().get(labelName);
     }
-    
+
     @Override
     public List<Entity> queryEntitiesByLabel(String labelName, String labelValue) {
         throw new UnsupportedOperationException("Not available now!");
     }
-    
+
     /**
      * Remove CMDB entity.
      *
@@ -156,7 +150,7 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
         }
         entityMap.get(entityType).remove(entityName);
     }
-    
+
     /**
      * Update entity.
      *
@@ -168,22 +162,22 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
         }
         entityMap.get(entity.getType()).put(entity.getName(), entity);
     }
-    
+
     public class CmdbLabelTask implements Runnable {
-        
+
         @Override
         public void run() {
-            
+
             Loggers.MAIN.debug("LABEL-TASK {}", "start dump.");
-            
+
             if (cmdbService == null) {
                 return;
             }
-            
+
             try {
-                
+
                 Map<String, Label> tmpLabelMap = new HashMap<>(16);
-                
+
                 Set<String> labelNames = cmdbService.getLabelNames();
                 if (labelNames == null || labelNames.isEmpty()) {
                     Loggers.MAIN.warn("CMDB-LABEL-TASK {}", "load label names failed!");
@@ -192,14 +186,14 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
                         // If get null label, it's still ok. We will try it later when we meet this label:
                         tmpLabelMap.put(labelName, cmdbService.getLabel(labelName));
                     }
-                    
+
                     if (Loggers.MAIN.isDebugEnabled()) {
                         Loggers.MAIN.debug("LABEL-TASK {}", "got label map:" + JacksonUtils.toJson(tmpLabelMap));
                     }
-                    
+
                     labelMap = tmpLabelMap;
                 }
-                
+
             } catch (Exception e) {
                 Loggers.MAIN.error("CMDB-LABEL-TASK {}", "dump failed!", e);
             } finally {
@@ -207,16 +201,16 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
             }
         }
     }
-    
+
     public class CmdbDumpTask implements Runnable {
-        
+
         @Override
         public void run() {
-            
+
             try {
-                
+
                 Loggers.MAIN.debug("DUMP-TASK {}", "start dump.");
-                
+
                 if (cmdbService == null) {
                     return;
                 }
@@ -229,29 +223,29 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
             }
         }
     }
-    
+
     public class CmdbEventTask implements Runnable {
-        
+
         @Override
         public void run() {
             try {
-                
+
                 Loggers.MAIN.debug("EVENT-TASK {}", "start dump.");
-                
+
                 if (cmdbService == null) {
                     return;
                 }
-                
+
                 long current = System.currentTimeMillis();
                 List<EntityEvent> events = cmdbService.getEntityEvents(eventTimestamp);
                 eventTimestamp = current;
-                
+
                 if (Loggers.MAIN.isDebugEnabled()) {
                     Loggers.MAIN.debug("EVENT-TASK {}", "got events size:" + ", events:" + JacksonUtils.toJson(events));
                 }
-                
+
                 if (events != null && !events.isEmpty()) {
-                    
+
                     for (EntityEvent event : events) {
                         switch (event.getType()) {
                             case ENTITY_REMOVE:
@@ -265,7 +259,7 @@ public class CmdbProvider implements CmdbReader, CmdbWriter {
                         }
                     }
                 }
-                
+
             } catch (Exception e) {
                 Loggers.MAIN.error("CMDB-EVENT {}", "event task failed!", e);
             } finally {

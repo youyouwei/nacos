@@ -16,12 +16,7 @@
 
 package com.alibaba.nacos.common.utils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
@@ -32,9 +27,9 @@ import java.util.Properties;
  * @author boyan
  */
 public class ResourceUtils {
-    
+
     private static final String CLASSPATH_PREFIX = "classpath:";
-    
+
     /**
      * Returns the URL of the resource on the classpath.
      *
@@ -45,24 +40,24 @@ public class ResourceUtils {
     public static URL getResourceUrl(String resource) throws IOException {
         if (resource.startsWith(CLASSPATH_PREFIX)) {
             String path = resource.substring(CLASSPATH_PREFIX.length());
-            
+
             ClassLoader classLoader = ResourceUtils.class.getClassLoader();
-            
+
             URL url = (classLoader != null ? classLoader.getResource(path) : ClassLoader.getSystemResource(path));
             if (url == null) {
                 throw new FileNotFoundException("Resource [" + resource + "] does not exist");
             }
-            
+
             return url;
         }
-        
+
         try {
             return new URL(resource);
         } catch (MalformedURLException ex) {
             return new File(resource).toURI().toURL();
         }
     }
-    
+
     /**
      * Returns the URL of the resource on the classpath.
      *
@@ -84,7 +79,7 @@ public class ResourceUtils {
         }
         return url;
     }
-    
+
     /**
      * Returns a resource on the classpath as a Stream object.
      *
@@ -96,7 +91,7 @@ public class ResourceUtils {
         ClassLoader loader = ResourceUtils.class.getClassLoader();
         return getResourceAsStream(loader, resource);
     }
-    
+
     /**
      * Returns a resource on the classpath as a Stream object.
      *
@@ -118,7 +113,7 @@ public class ResourceUtils {
         }
         return in;
     }
-    
+
     /**
      * Returns a resource on the classpath as a Properties object.
      *
@@ -130,7 +125,7 @@ public class ResourceUtils {
         ClassLoader loader = ResourceUtils.class.getClassLoader();
         return getResourceAsProperties(loader, resource);
     }
-    
+
     /**
      * Returns a resource on the classpath as a Properties object.
      *
@@ -146,7 +141,7 @@ public class ResourceUtils {
         in.close();
         return props;
     }
-    
+
     /**
      * Returns a resource on the classpath as a Reader object.
      *
@@ -157,7 +152,7 @@ public class ResourceUtils {
     public static InputStreamReader getResourceAsReader(String resource, String charsetName) throws IOException {
         return new InputStreamReader(getResourceAsStream(resource), charsetName);
     }
-    
+
     /**
      * Returns a resource on the classpath as a Reader object.
      *
@@ -170,7 +165,7 @@ public class ResourceUtils {
             throws IOException {
         return new InputStreamReader(getResourceAsStream(loader, resource), charsetName);
     }
-    
+
     /**
      * Returns a resource on the classpath as a File object.
      *
@@ -181,7 +176,7 @@ public class ResourceUtils {
     public static File getResourceAsFile(String resource) throws IOException {
         return new File(getResourceUrl(resource).getFile());
     }
-    
+
     /**
      * Returns a resource on the classpath as a File object.
      *
@@ -191,7 +186,7 @@ public class ResourceUtils {
     public static File getResourceAsFile(URL url) {
         return new File(url.getFile());
     }
-    
+
     /**
      * Returns a resource on the classpath as a File object.
      *
@@ -203,5 +198,5 @@ public class ResourceUtils {
     public static File getResourceAsFile(ClassLoader loader, String resource) throws IOException {
         return new File(getResourceUrl(loader, resource).getFile());
     }
-    
+
 }

@@ -2,18 +2,8 @@ package com.alibaba.nacos.istio.model.mcp;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
@@ -45,7 +35,7 @@ public final class ResourceSinkGrpc {
     if ((getEstablishResourceStreamMethod = ResourceSinkGrpc.getEstablishResourceStreamMethod) == null) {
       synchronized (ResourceSinkGrpc.class) {
         if ((getEstablishResourceStreamMethod = ResourceSinkGrpc.getEstablishResourceStreamMethod) == null) {
-          ResourceSinkGrpc.getEstablishResourceStreamMethod = getEstablishResourceStreamMethod = 
+          ResourceSinkGrpc.getEstablishResourceStreamMethod = getEstablishResourceStreamMethod =
               io.grpc.MethodDescriptor.<com.alibaba.nacos.istio.model.mcp.Resources, com.alibaba.nacos.istio.model.mcp.RequestResources>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
               .setFullMethodName(generateFullMethodName(

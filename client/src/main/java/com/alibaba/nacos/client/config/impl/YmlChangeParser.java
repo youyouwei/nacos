@@ -20,11 +20,7 @@ import com.alibaba.nacos.api.config.ConfigChangeItem;
 import com.alibaba.nacos.common.utils.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * YmlChangeParser.
@@ -32,16 +28,16 @@ import java.util.Map;
  * @author rushsky518
  */
 public class YmlChangeParser extends AbstractConfigChangeParser {
-    
+
     public YmlChangeParser() {
         super("yaml");
     }
-    
+
     @Override
     public Map<String, ConfigChangeItem> doParse(String oldContent, String newContent, String type) {
         Map<String, Object> oldMap = Collections.emptyMap();
         Map<String, Object> newMap = Collections.emptyMap();
-        
+
         if (StringUtils.isNotBlank(oldContent)) {
             oldMap = (new Yaml()).load(oldContent);
             oldMap = getFlattenedMap(oldMap);
@@ -50,16 +46,16 @@ public class YmlChangeParser extends AbstractConfigChangeParser {
             newMap = (new Yaml()).load(newContent);
             newMap = getFlattenedMap(newMap);
         }
-        
+
         return filterChangeData(oldMap, newMap);
     }
-    
+
     private final Map<String, Object> getFlattenedMap(Map<String, Object> source) {
         Map<String, Object> result = new LinkedHashMap<String, Object>(128);
         buildFlattenedMap(result, source, null);
         return result;
     }
-    
+
     private void buildFlattenedMap(Map<String, Object> result, Map<String, Object> source, String path) {
         for (Iterator<Map.Entry<String, Object>> itr = source.entrySet().iterator(); itr.hasNext(); ) {
             Map.Entry<String, Object> e = itr.next();
@@ -91,5 +87,5 @@ public class YmlChangeParser extends AbstractConfigChangeParser {
             }
         }
     }
-    
+
 }

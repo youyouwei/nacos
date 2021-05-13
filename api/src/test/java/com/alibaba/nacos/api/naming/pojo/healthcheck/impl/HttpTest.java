@@ -24,28 +24,26 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class HttpTest {
-    
+
     private ObjectMapper objectMapper;
-    
+
     private Http http;
-    
+
     @Before
     public void setUp() {
         objectMapper = new ObjectMapper();
         http = new Http();
     }
-    
+
     @Test
     public void testGetExpectedResponseCodeWithEmpty() {
         http.setHeaders("");
         assertTrue(http.getCustomHeaders().isEmpty());
     }
-    
+
     @Test
     public void testGetExpectedResponseCodeWithoutEmpty() {
         http.setHeaders("x:a|y:");
@@ -54,7 +52,7 @@ public class HttpTest {
         assertEquals(1, actual.size());
         assertEquals("a", actual.get("x"));
     }
-    
+
     @Test
     public void testSerialize() throws JsonProcessingException {
         http.setHeaders("x:a|y:");
@@ -65,7 +63,7 @@ public class HttpTest {
         assertTrue(actual.contains("\"headers\":\"x:a|y:\""));
         assertTrue(actual.contains("\"expectedResponseCode\":200"));
     }
-    
+
     @Test
     public void testDeserialize() throws IOException {
         String testChecker = "{\"type\":\"HTTP\",\"path\":\"/x\",\"headers\":\"x:a|y:\",\"expectedResponseCode\":200}";

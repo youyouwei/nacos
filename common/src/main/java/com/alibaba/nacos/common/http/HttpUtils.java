@@ -34,16 +34,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.net.*;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,9 +46,9 @@ import java.util.regex.Pattern;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public final class HttpUtils {
-    
+
     private static final Pattern CONTEXT_PATH_MATCH = Pattern.compile("(\\/)\\1+");
-    
+
     /**
      * Init http header.
      *
@@ -70,7 +62,7 @@ public final class HttpUtils {
             requestBase.setHeader(entry.getKey(), entry.getValue());
         }
     }
-    
+
     /**
      * Init http entity.
      *
@@ -97,7 +89,7 @@ public final class HttpUtils {
             request.setEntity(entity);
         }
     }
-    
+
     /**
      * Init request from entity map.
      *
@@ -121,7 +113,7 @@ public final class HttpUtils {
             request.setEntity(entity);
         }
     }
-    
+
     /**
      * Build URL.
      *
@@ -164,7 +156,7 @@ public final class HttpUtils {
         }
         return sb.toString();
     }
-    
+
     /**
      * Translate parameter map.
      *
@@ -179,7 +171,7 @@ public final class HttpUtils {
         }
         return map;
     }
-    
+
     /**
      * Encoding parameters to url string.
      *
@@ -198,15 +190,15 @@ public final class HttpUtils {
             if (StringUtils.isEmpty(entry.getValue())) {
                 continue;
             }
-            
+
             sb.append(entry.getKey()).append("=");
             sb.append(URLEncoder.encode(entry.getValue(), encoding));
             sb.append("&");
         }
-        
+
         return sb.toString();
     }
-    
+
     /**
      * Encoding KV list to url string.
      *
@@ -220,7 +212,7 @@ public final class HttpUtils {
         if (null == paramValues) {
             return null;
         }
-        
+
         for (Iterator<String> iter = paramValues.iterator(); iter.hasNext(); ) {
             sb.append(iter.next()).append("=");
             sb.append(URLEncoder.encode(iter.next(), encoding));
@@ -230,11 +222,11 @@ public final class HttpUtils {
         }
         return sb.toString();
     }
-    
+
     public static String decode(String str, String encode) throws UnsupportedEncodingException {
         return innerDecode(null, str, encode);
     }
-    
+
     /**
      * build URI By url and query.
      *
@@ -248,7 +240,7 @@ public final class HttpUtils {
         }
         return new URI(url);
     }
-    
+
     /**
      * HTTP request exception is a timeout exception.
      *
@@ -259,7 +251,7 @@ public final class HttpUtils {
         return throwable instanceof SocketTimeoutException || throwable instanceof ConnectTimeoutException
                 || throwable instanceof TimeoutException || throwable.getCause() instanceof TimeoutException;
     }
-    
+
     private static String innerDecode(String pre, String now, String encode) throws UnsupportedEncodingException {
         // Because the data may be encoded by the URL more than once,
         // it needs to be decoded recursively until it is fully successful
@@ -270,5 +262,5 @@ public final class HttpUtils {
         now = URLDecoder.decode(now, encode);
         return innerDecode(pre, now, encode);
     }
-    
+
 }

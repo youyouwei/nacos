@@ -27,24 +27,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.keran213539.commonOkHttp.CommonOkHttpClient;
 import com.github.keran213539.commonOkHttp.CommonOkHttpClientBuilder;
 import com.github.keran213539.commonOkHttp.UploadByteFile;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author klw
@@ -66,7 +56,7 @@ public class ConfigExportAndImportAPI_CITCase {
     private String SERVER_ADDR = null;
 
     private HttpAgent agent = null;
-    
+
     @BeforeClass
     @AfterClass
     public static void cleanClientCache() throws Exception {
@@ -121,7 +111,7 @@ public class ConfigExportAndImportAPI_CITCase {
             params.put("beta", "false");
             result = agent.httpDelete(CONFIG_CONTROLLER_PATH + "/", null, params, agent.getEncode(), TIME_OUT);
             Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
-    
+
             params.put("dataId", "testHasAppname1.properties");
             params.put("group", "EXPORT_IMPORT_TEST_GROUP");
             params.put("beta", "false");

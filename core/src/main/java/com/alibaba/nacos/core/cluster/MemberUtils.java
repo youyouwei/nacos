@@ -23,14 +23,7 @@ import com.alibaba.nacos.sys.env.EnvUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -41,15 +34,15 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public class MemberUtils {
-    
+
     private static final String TARGET_MEMBER_CONNECT_REFUSE_ERRMSG = "Connection refused";
-    
+
     private static ServerMemberManager manager;
-    
+
     public static void setManager(ServerMemberManager manager) {
         MemberUtils.manager = manager;
     }
-    
+
     /**
      * Information copy.
      *
@@ -63,7 +56,7 @@ public class MemberUtils {
         oldMember.setExtendInfo(newMember.getExtendInfo());
         oldMember.setAddress(newMember.getAddress());
     }
-    
+
     /**
      * parse ip:port to member.
      *
@@ -75,7 +68,7 @@ public class MemberUtils {
         // Nacos default port is 8848
         int defaultPort = 8848;
         // Set the default Raft port information for securit
-        
+
         String address = member;
         int port = defaultPort;
         String[] info = IPUtil.splitIPPortStr(address);
@@ -83,20 +76,20 @@ public class MemberUtils {
             address = info[0];
             port = Integer.parseInt(info[1]);
         }
-        
+
         Member target = Member.builder().ip(address).port(port).state(NodeState.UP).build();
-        
+
         Map<String, Object> extendInfo = new HashMap<>(4);
         // The Raft Port information needs to be set by default
         extendInfo.put(MemberMetaDataConstants.RAFT_PORT, String.valueOf(calculateRaftPort(target)));
         target.setExtendInfo(extendInfo);
         return target;
     }
-    
+
     public static int calculateRaftPort(Member member) {
         return member.getPort() - 1000;
     }
-    
+
     /**
      * Resolves to Member list.
      *
@@ -111,7 +104,7 @@ public class MemberUtils {
         }
         return members;
     }
-    
+
     /**
      * Successful processing of the operation on the node.
      *
@@ -125,11 +118,11 @@ public class MemberUtils {
         cloneMember.setFailAccessCnt(0);
         manager.update(cloneMember);
     }
-    
+
     public static void onFail(Member member) {
         onFail(member, null);
     }
-    
+
     /**
      * Failure processing of the operation on the node.
      *
@@ -143,7 +136,7 @@ public class MemberUtils {
         cloneMember.setState(NodeState.SUSPICIOUS);
         cloneMember.setFailAccessCnt(member.getFailAccessCnt() + 1);
         int maxFailAccessCnt = EnvUtil.getProperty("nacos.core.member.fail-access-cnt", Integer.class, 3);
-        
+
         // If the number of consecutive failures to access the target node reaches
         // a maximum, or the link request is rejected, the state is directly down
         if (cloneMember.getFailAccessCnt() > maxFailAccessCnt || StringUtils
@@ -152,7 +145,7 @@ public class MemberUtils {
         }
         manager.update(cloneMember);
     }
-    
+
     /**
      * Node list information persistence.
      *
@@ -170,7 +163,7 @@ public class MemberUtils {
             Loggers.CLUSTER.error("cluster member node persistence failed : {}", ExceptionUtil.getAllExceptionMsg(ex));
         }
     }
-    
+
     /**
      * We randomly pick k nodes.
      *
@@ -181,9 +174,9 @@ public class MemberUtils {
      */
     @SuppressWarnings("PMD.UndefineMagicConstantRule")
     public static Collection<Member> kRandom(Collection<Member> members, Predicate<Member> filter, int k) {
-        
+
         Set<Member> kMembers = new HashSet<>();
-        
+
         // Here thinking similar consul gossip protocols random k node
         int totalSize = members.size();
         Member[] membersArray = members.toArray(new Member[totalSize]);
@@ -195,24 +188,24 @@ public class MemberUtils {
                 kMembers.add(member);
             }
         }
-        
+
         return kMembers;
     }
-    
+
     /**
      * Default configuration format resolution, only NACos-Server IP or IP :port or hostname: Port information.
      */
     public static Collection<Member> readServerConf(Collection<String> members) {
         Set<Member> nodes = new HashSet<>();
-        
+
         for (String member : members) {
             Member target = singleParse(member);
             nodes.add(target);
         }
-        
+
         return nodes;
     }
-    
+
     /**
      * Select target members with filter.
      *
@@ -223,7 +216,7 @@ public class MemberUtils {
     public static Set<Member> selectTargetMembers(Collection<Member> members, Predicate<Member> filter) {
         return members.stream().filter(filter).collect(Collectors.toSet());
     }
-    
+
     /**
      * Get address list of members.
      *
@@ -234,7 +227,7 @@ public class MemberUtils {
         return members.stream().map(Member::getAddress).sorted()
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
-    
+
     /**
      * Judge whether basic info has changed.
      *
@@ -260,7 +253,7 @@ public class MemberUtils {
         }
         return isBasicInfoChangedInExtendInfo(expected, actual);
     }
-    
+
     private static boolean isBasicInfoChangedInExtendInfo(Member expected, Member actual) {
         for (String each : MemberMetaDataConstants.BASIC_META_KEYS) {
             if (expected.getExtendInfo().containsKey(each) != actual.getExtendInfo().containsKey(each)) {

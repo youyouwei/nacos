@@ -20,11 +20,7 @@ import com.alibaba.nacos.client.utils.LogUtils;
 import com.alibaba.nacos.common.utils.StringUtils;
 import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.Properties;
 import java.util.Timer;
@@ -36,21 +32,21 @@ import java.util.TimerTask;
  * @author Nacos
  */
 public class CredentialWatcher {
-    
+
     private static final Logger SPAS_LOGGER = LogUtils.logger(CredentialWatcher.class);
-    
+
     private static final long REFRESH_INTERVAL = 10 * 1000;
-    
+
     private final CredentialService serviceInstance;
-    
+
     private final String appName;
-    
+
     private String propertyPath;
-    
+
     private final TimerTask watcher;
-    
+
     private boolean stopped;
-    
+
     @SuppressWarnings("PMD.AvoidUseTimerRule")
     public CredentialWatcher(String appName, CredentialService serviceInstance) {
         this.appName = appName;
@@ -58,13 +54,13 @@ public class CredentialWatcher {
         loadCredential(true);
         watcher = new TimerTask() {
             private final Timer timer = new Timer(true);
-            
+
             private long modified = 0;
-            
+
             {
                 timer.schedule(this, REFRESH_INTERVAL, REFRESH_INTERVAL);
             }
-            
+
             @Override
             public void run() {
                 synchronized (this) {
@@ -89,7 +85,7 @@ public class CredentialWatcher {
             }
         };
     }
-    
+
     /**
      * Stop watcher.
      */
@@ -105,7 +101,7 @@ public class CredentialWatcher {
         }
         SPAS_LOGGER.info("[{}] {} is stopped", appName, this.getClass().getSimpleName());
     }
-    
+
     private void loadCredential(boolean init) {
         boolean logWarn = init;
         if (propertyPath == null) {
@@ -114,7 +110,7 @@ public class CredentialWatcher {
                 propertyPath = url.getPath();
             }
             if (propertyPath == null || propertyPath.isEmpty()) {
-                
+
                 String value = System.getProperty("spas.identity");
                 if (StringUtils.isNotEmpty(value)) {
                     propertyPath = value;
@@ -135,7 +131,7 @@ public class CredentialWatcher {
                 }
             }
         }
-        
+
         InputStream propertiesIS = null;
         do {
             try {
@@ -153,7 +149,7 @@ public class CredentialWatcher {
             }
             break;
         } while (true);
-        
+
         String accessKey = null;
         String secretKey = null;
         String tenantId = null;
@@ -184,11 +180,11 @@ public class CredentialWatcher {
                             + "Unable to close credential file " + propertyPath, e);
                 }
             }
-            
+
             if (logWarn) {
                 SPAS_LOGGER.info("[{}] Load credential file {}", appName, propertyPath);
             }
-            
+
             if (!IdentifyConstants.DOCKER_CREDENTIAL_PATH.equals(propertyPath)) {
                 if (properties.containsKey(IdentifyConstants.ACCESS_KEY)) {
                     accessKey = properties.getProperty(IdentifyConstants.ACCESS_KEY);
@@ -206,24 +202,24 @@ public class CredentialWatcher {
                 if (properties.containsKey(IdentifyConstants.DOCKER_SECRET_KEY)) {
                     secretKey = properties.getProperty(IdentifyConstants.DOCKER_SECRET_KEY);
                 }
-                
+
                 if (properties.containsKey(IdentifyConstants.DOCKER_TENANT_ID)) {
                     tenantId = properties.getProperty(IdentifyConstants.DOCKER_TENANT_ID);
                 }
             }
         }
-        
+
         if (accessKey != null) {
             accessKey = accessKey.trim();
         }
         if (secretKey != null) {
             secretKey = secretKey.trim();
         }
-        
+
         if (tenantId != null) {
             tenantId = tenantId.trim();
         }
-        
+
         Credentials credential = new Credentials(accessKey, secretKey, tenantId);
         if (!credential.valid()) {
             SPAS_LOGGER
@@ -232,7 +228,7 @@ public class CredentialWatcher {
             propertyPath = null;
             // return;
         }
-        
+
         serviceInstance.setCredential(credential);
     }
 }

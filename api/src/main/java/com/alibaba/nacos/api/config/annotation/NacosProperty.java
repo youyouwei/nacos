@@ -16,11 +16,7 @@
 
 package com.alibaba.nacos.api.config.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * An annotation for Nacos Property name of  Nacos Configuration to bind a field from annotated {@link
@@ -35,12 +31,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface NacosProperty {
-    
+
     /**
      * The property name of Nacos Configuration to bind a field.
      *
      * @return property name
      */
     String value();
-    
+
 }

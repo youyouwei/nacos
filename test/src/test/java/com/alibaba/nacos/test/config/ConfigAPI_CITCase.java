@@ -30,12 +30,7 @@ import com.alibaba.nacos.client.config.http.ServerHttpAgent;
 import com.alibaba.nacos.common.http.HttpRestResult;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.common.utils.ThreadUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -57,32 +52,32 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SpringBootTest(classes = Nacos.class, properties = {"server.servlet.context-path=/nacos",
         "server.port=7001"}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class ConfigAPI_CITCase {
-    
+
     public static final long TIME_OUT = 5000;
-    
+
     static ConfigService iconfig = null;
-    
+
     static HttpAgent agent = null;
-    
+
     static final String CONFIG_CONTROLLER_PATH = "/v1/cs/configs";
-    
+
     String SPECIAL_CHARACTERS = "!@#$%^&*()_+-=_|/'?.";
-    
+
     String dataId = "yanlin";
-    
+
     String group = "yanlin";
-    
+
     @Value("${server.servlet.context-path}")
     private String contextPath;
-    
+
     @LocalServerPort
     private int port;
-    
+
     @BeforeClass
     public static void beforeClass() {
         ConfigCleanUtils.changeToNewTestNacosHome(ConfigAPI_CITCase.class.getSimpleName());
     }
-    
+
     @Before
     public void setUp() throws Exception {
         Properties properties = new Properties();
@@ -92,7 +87,7 @@ public class ConfigAPI_CITCase {
         agent = new MetricsHttpAgent(new ServerHttpAgent(properties));
         agent.start();
     }
-    
+
     @After
     public void cleanup() throws Exception {
         HttpRestResult<String> result = null;
@@ -110,13 +105,13 @@ public class ConfigAPI_CITCase {
             Assert.fail();
         }
     }
-    
+
     @BeforeClass
     @AfterClass
     public static void cleanClientCache() throws Exception {
         ConfigCleanUtils.cleanClientCache();
     }
-    
+
     /**
      * @TCDescription : nacos_正常获取数据
      * @TestStep :
@@ -137,7 +132,7 @@ public class ConfigAPI_CITCase {
         System.out.println(value);
         Assert.assertNull(value);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_服务端无配置时，获取配置
@@ -147,7 +142,7 @@ public class ConfigAPI_CITCase {
         String content = iconfig.getConfig(dataId, "nacos", TIME_OUT);
         Assert.assertNull(content);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_获取配置时dataId为null
@@ -162,7 +157,7 @@ public class ConfigAPI_CITCase {
         }
         Assert.fail();
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_获取配置时group为null
@@ -174,15 +169,15 @@ public class ConfigAPI_CITCase {
         boolean result = iconfig.publishConfig(dataId, null, content);
         Assert.assertTrue(result);
         Thread.sleep(TIME_OUT);
-        
+
         String value = iconfig.getConfig(dataId, null, TIME_OUT);
         Assert.assertEquals(content, value);
-        
+
         result = iconfig.removeConfig(dataId, null);
         Thread.sleep(TIME_OUT);
         Assert.assertTrue(result);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_服务端无该配置项时，正常创建配置
@@ -196,7 +191,7 @@ public class ConfigAPI_CITCase {
         result = iconfig.removeConfig(dataId, group);
         Assert.assertTrue(result);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_服务端有该配置项时，正常修改配置
@@ -207,14 +202,14 @@ public class ConfigAPI_CITCase {
         boolean result = iconfig.publishConfig(dataId, group, content);
         Thread.sleep(TIME_OUT);
         Assert.assertTrue(result);
-        
+
         final String content1 = "test.abc";
         result = iconfig.publishConfig(dataId, group, content1);
         Thread.sleep(TIME_OUT);
         String value = iconfig.getConfig(dataId, group, TIME_OUT);
         Assert.assertEquals(content1, value);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_发布配置时包含特殊字符
@@ -225,11 +220,11 @@ public class ConfigAPI_CITCase {
         boolean result = iconfig.publishConfig(dataId, group, content);
         Thread.sleep(TIME_OUT);
         Assert.assertTrue(result);
-        
+
         String value = iconfig.getConfig(dataId, group, TIME_OUT);
         Assert.assertEquals(content, value);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_发布配置时dataId为null
@@ -247,7 +242,7 @@ public class ConfigAPI_CITCase {
         }
         Assert.fail();
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_发布配置时group为null
@@ -259,12 +254,12 @@ public class ConfigAPI_CITCase {
         boolean result = iconfig.publishConfig(dataId, null, content);
         Thread.sleep(TIME_OUT);
         Assert.assertTrue(result);
-        
+
         String value = iconfig.getConfig(dataId, null, TIME_OUT);
         Assert.assertEquals(content, value);
     }
-    
-    
+
+
     /**
      * @throws Exception
      * @TCDescription : nacos_发布配置时配置内容为null
@@ -281,7 +276,7 @@ public class ConfigAPI_CITCase {
         }
         Assert.fail();
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_发布配置时配置内容包含中文字符
@@ -295,7 +290,7 @@ public class ConfigAPI_CITCase {
         String value = iconfig.getConfig(dataId, group, TIME_OUT);
         Assert.assertEquals(content, value);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_服务端有该配置项时，正常删除配置
@@ -304,17 +299,17 @@ public class ConfigAPI_CITCase {
     public void nacos_removeConfig_1() throws Exception {
         String content = "test";
         boolean result = iconfig.publishConfig(dataId, group, content);
-        
+
         Assert.assertTrue(result);
         Thread.sleep(TIME_OUT);
-        
+
         result = iconfig.removeConfig(dataId, group);
         Assert.assertTrue(result);
         Thread.sleep(TIME_OUT);
         String value = iconfig.getConfig(dataId, group, TIME_OUT);
         Assert.assertNull(value);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_服务端无该配置项时，配置删除失败
@@ -325,7 +320,7 @@ public class ConfigAPI_CITCase {
         boolean result = iconfig.removeConfig(dataId, group);
         Assert.assertTrue(result);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_删除配置时dataId为null
@@ -341,7 +336,7 @@ public class ConfigAPI_CITCase {
         }
         Assert.fail();
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_删除配置时group为null
@@ -351,7 +346,7 @@ public class ConfigAPI_CITCase {
         boolean result = iconfig.removeConfig(dataId, null);
         Assert.assertTrue(result);
     }
-    
+
     /**
      * @throws Exception
      * @TCDescription : nacos_添加对dataId的监听，在服务端修改配置后，获取监听后的修改的配置
@@ -362,7 +357,7 @@ public class ConfigAPI_CITCase {
         final String content = "test-abc";
         boolean result = iconfig.publishConfig(dataId, group, content);
         Assert.assertTrue(result);
-        
+
         Listener ml = new Listener() {
             @Override
             public void receiveConfigInfo(String configInfo) {
@@ -370,7 +365,7 @@ public class ConfigAPI_CITCase {
                 count.incrementAndGet();
                 Assert.assertEquals(content, configInfo);
             }
-            
+
             @Override
             public Executor getExecutor() {
                 return null;
@@ -383,7 +378,7 @@ public class ConfigAPI_CITCase {
         Assert.assertTrue(count.get() >= 1);
         iconfig.removeListener(dataId, group, ml);
     }
-    
+
     /**
      * @TCDescription : nacos_设置监听器为null，抛出异常信息
      * @TestStep :
@@ -395,8 +390,8 @@ public class ConfigAPI_CITCase {
     public void nacos_addListener_2() throws Exception {
         iconfig.addListener(dataId, group, null);
     }
-    
-    
+
+
     /**
      * @TCDescription : nacos_添加对dataId的监听，修改服务端配置，正常推送并只推送一次
      * @TestStep : TODO Test steps
@@ -413,10 +408,10 @@ public class ConfigAPI_CITCase {
         final String newContent = "nacos_addListener_3-" + System.currentTimeMillis();
         boolean result = iconfig.publishConfig(dataId, group, content);
         Assert.assertTrue(result);
-        
+
         // Maximum assurance level notification has been performed
         ThreadUtils.sleep(5000);
-        
+
         Listener ml = new AbstractListener() {
             @Override
             public void receiveConfigInfo(String configInfo) {
@@ -434,7 +429,7 @@ public class ConfigAPI_CITCase {
         Assert.assertEquals(1, count.get());
         iconfig.removeListener(dataId, group, ml);
     }
-    
+
     /**
      * @TCDescription : nacos_服务端无配置时，添加对dataId的监听
      * @TestStep : TODO Test steps
@@ -445,10 +440,10 @@ public class ConfigAPI_CITCase {
     @Test(timeout = 5 * TIME_OUT)
     public void nacos_addListener_4() throws Exception {
         final AtomicInteger count = new AtomicInteger(0);
-        
+
         iconfig.removeConfig(dataId, group);
         Thread.sleep(TIME_OUT);
-        
+
         Listener ml = new AbstractListener() {
             @Override
             public void receiveConfigInfo(String configInfo) {
@@ -460,14 +455,14 @@ public class ConfigAPI_CITCase {
         String content = "test-abc";
         boolean result = iconfig.publishConfig(dataId, group, content);
         Assert.assertTrue(result);
-        
+
         while (count.get() == 0) {
             Thread.sleep(3000);
         }
         Assert.assertEquals(1, count.get());
         iconfig.removeListener(dataId, group, ml);
     }
-    
+
     /**
      * @TCDescription : nacos_在主动拉取配置后并注册Listener，在更新配置后才触发Listener监听事件(使用特定接口)
      * @TestStep : TODO Test steps
@@ -484,9 +479,9 @@ public class ConfigAPI_CITCase {
         final String newContent = "new-test-def";
         boolean result = iconfig.publishConfig(dataId, group, content);
         Assert.assertTrue(result);
-        
+
         Thread.sleep(2000);
-        
+
         Listener ml = new AbstractListener() {
             @Override
             public void receiveConfigInfo(String configInfo) {
@@ -494,20 +489,20 @@ public class ConfigAPI_CITCase {
                 Assert.assertEquals(newContent, configInfo);
             }
         };
-        
+
         String receiveContent = iconfig.getConfigAndSignListener(dataId, group, 1000, ml);
         System.out.println(receiveContent);
-        
+
         result = iconfig.publishConfig(dataId, group, newContent);
         Assert.assertTrue(result);
-        
+
         Assert.assertEquals(content, receiveContent);
         Thread.sleep(2000);
-        
+
         Assert.assertEquals(1, count.get());
         iconfig.removeListener(dataId, group, ml);
     }
-    
+
     /**
      * @TCDescription : nacos_在主动拉取配置后并注册Listener，在更新配置后才触发Listener监听事件(进行配置参数设置)
      * @TestStep : TODO Test steps
@@ -517,13 +512,13 @@ public class ConfigAPI_CITCase {
      */
     @Test
     public void nacos_addListener_6() throws InterruptedException, NacosException {
-        
+
         Properties properties = new Properties();
         properties.put(PropertyKeyConst.SERVER_ADDR, "127.0.0.1" + ":" + port);
         properties.put(PropertyKeyConst.ENABLE_REMOTE_SYNC_CONFIG, "true");
         properties.put(PropertyKeyConst.CONTEXT_PATH, contextPath);
         ConfigService iconfig = NacosFactory.createConfigService(properties);
-        
+
         final AtomicInteger count = new AtomicInteger(0);
         final String dataId = "nacos_addListener_6";
         final String group = "nacos_addListener_6";
@@ -531,9 +526,9 @@ public class ConfigAPI_CITCase {
         final String newContent = "new-test-def";
         boolean result = iconfig.publishConfig(dataId, group, content);
         Assert.assertTrue(result);
-        
+
         Thread.sleep(2000);
-        
+
         Listener ml = new AbstractListener() {
             @Override
             public void receiveConfigInfo(String configInfo) {
@@ -542,26 +537,26 @@ public class ConfigAPI_CITCase {
                 Assert.assertEquals(newContent, configInfo);
             }
         };
-        
+
         iconfig.addListener(dataId, group, ml);
-        
+
         String receiveContent = iconfig.getConfig(dataId, group, 1000);
-        
+
         System.out.println(receiveContent);
-        
+
         result = iconfig.publishConfig(dataId, group, newContent);
         Assert.assertTrue(result);
-        
+
         Thread.sleep(2000);
-        
+
         receiveContent = iconfig.getConfig(dataId, group, 1000);
-        
+
         Assert.assertEquals(newContent, receiveContent);
-        
+
         Assert.assertEquals(1, count.get());
         iconfig.removeListener(dataId, group, ml);
     }
-    
+
     /**
      * @TCDescription : nacos_正常移除监听器
      * @TestStep : TODO Test steps
@@ -586,10 +581,10 @@ public class ConfigAPI_CITCase {
                 }
             });
         } catch (Exception e) {
-        
+
         }
     }
-    
+
     /**
      * @TCDescription : nacos_移除无该项dataId的监听器
      * @TestStep : TODO Test steps
@@ -604,14 +599,14 @@ public class ConfigAPI_CITCase {
             iconfig.removeListener(dataId, group, new AbstractListener() {
                 @Override
                 public void receiveConfigInfo(String configInfo) {
-                
+
                 }
             });
         } catch (Exception e) {
             Assert.fail();
         }
     }
-    
+
     /**
      * @TCDescription : nacos_存在多个监听器时，删除最后一个监听器
      * @TestStep : TODO Test steps
@@ -623,7 +618,7 @@ public class ConfigAPI_CITCase {
     public void nacos_removeListener_3() throws Exception {
         final String contentRemove = "test-abc-two";
         final AtomicInteger count = new AtomicInteger(0);
-        
+
         Listener ml = new AbstractListener() {
             @Override
             public void receiveConfigInfo(String configInfo) {
@@ -640,20 +635,20 @@ public class ConfigAPI_CITCase {
         };
         iconfig.addListener(dataId, group, ml);
         iconfig.addListener(dataId, group, ml1);
-        
+
         iconfig.removeListener(dataId, group, ml);
         Thread.sleep(TIME_OUT);
-        
+
         boolean result = iconfig.publishConfig(dataId, group, contentRemove);
         Thread.sleep(TIME_OUT);
         Assert.assertTrue(result);
-        
+
         while (count.get() == 0) {
             Thread.sleep(3000);
         }
         Assert.assertNotEquals(0, count.get());
     }
-    
+
     /**
      * @TCDescription : nacos_监听器为null时
      * @TestStep : TODO Test steps
@@ -665,7 +660,7 @@ public class ConfigAPI_CITCase {
     public void nacos_removeListener_4() {
         iconfig.removeListener(dataId, group, null);
     }
-    
+
     /**
      * @TCDescription : nacos_openAPI_配置具体信息
      * @TestStep :
@@ -676,7 +671,7 @@ public class ConfigAPI_CITCase {
     @Test(timeout = 3 * TIME_OUT)
     public void nacos_openAPI_detailConfig_1() {
         HttpRestResult<String> result = null;
-        
+
         try {
             final String content = "test";
             boolean ret = iconfig.publishConfig(dataId, group, content);
@@ -688,13 +683,13 @@ public class ConfigAPI_CITCase {
             params.put("show", "all");
             result = agent.httpGet(CONFIG_CONTROLLER_PATH, null, params, agent.getEncode(), TIME_OUT);
             Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
-            
+
             Assert.assertEquals(content, JacksonUtils.toObj(result.getData()).get("content").textValue());
         } catch (Exception e) {
             Assert.fail();
         }
     }
-    
+
     /**
      * @TCDescription : nacos_openAPI_catalog信息
      * @TestStep :
@@ -705,7 +700,7 @@ public class ConfigAPI_CITCase {
     @Test(timeout = 3 * TIME_OUT)
     public void nacos_openAPI_catalog() {
         HttpRestResult<String> result = null;
-        
+
         try {
             final String content = "test";
             boolean ret = iconfig.publishConfig(dataId, group, content);
@@ -716,15 +711,15 @@ public class ConfigAPI_CITCase {
             params.put("group", group);
             result = agent.httpGet(CONFIG_CONTROLLER_PATH + "/catalog", null, params, agent.getEncode(), TIME_OUT);
             Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
-            
+
             System.out.println(result.getData());
             Assert.assertFalse(JacksonUtils.toObj(result.getData()).get("data").isNull());
-            
+
         } catch (Exception e) {
             Assert.fail();
         }
     }
-    
+
     /**
      * @TCDescription : nacos_openAPI_queryBeta信息
      * @TestStep :
@@ -735,7 +730,7 @@ public class ConfigAPI_CITCase {
     @Test(timeout = 3 * TIME_OUT)
     public void nacos_openAPI_queryBeta_1() {
         HttpRestResult<String> result = null;
-        
+
         try {
             final String content = "test-beta";
             Map<String, String> headers = new HashMap<>();
@@ -758,11 +753,11 @@ public class ConfigAPI_CITCase {
             result = agent.httpDelete(CONFIG_CONTROLLER_PATH + "/", null, params, agent.getEncode(), TIME_OUT);
             Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
         } catch (Exception e) {
-            
+
             Assert.fail();
         }
     }
-    
+
     /**
      * @TCDescription : nacos_openAPI_queryBeta删除信息
      * @TestStep : 1. 发布配置 2. 删除Beta配置信息
@@ -773,7 +768,7 @@ public class ConfigAPI_CITCase {
     @Test(timeout = 3 * TIME_OUT)
     public void nacos_openAPI_queryBeta_delete() {
         HttpRestResult<String> result = null;
-        
+
         try {
             final String content = "test-beta";
             Map<String, String> headers = new HashMap<>();
@@ -785,13 +780,13 @@ public class ConfigAPI_CITCase {
             result = agent.httpPost(CONFIG_CONTROLLER_PATH + "/", headers, params, agent.getEncode(), TIME_OUT);
             Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
             Assert.assertEquals("true", result.getData());
-            
+
             params.clear();
             params.put("dataId", dataId);
             params.put("group", group);
             params.put("beta", "true");
             result = agent.httpDelete(CONFIG_CONTROLLER_PATH + "/", null, params, agent.getEncode(), TIME_OUT);
-            
+
             Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
             Assert.assertTrue(JacksonUtils.toObj(result.getData()).get("data").booleanValue());
         } catch (Exception e) {
@@ -799,7 +794,7 @@ public class ConfigAPI_CITCase {
             Assert.fail();
         }
     }
-    
+
     /**
      * @TCDescription : nacos_openAPI_模糊查询配置信息
      * @TestStep : 1. 发布配置 2. 模糊查询
@@ -810,7 +805,7 @@ public class ConfigAPI_CITCase {
     @Test(timeout = 5 * TIME_OUT)
     public void nacos_openAPI_fuzzySearchConfig() {
         HttpRestResult<String> result = null;
-        
+
         try {
             final String content = "test123";
             boolean ret = iconfig.publishConfig(dataId, group, content);
@@ -824,7 +819,7 @@ public class ConfigAPI_CITCase {
             params.put("search", "blur");
             result = agent.httpGet(CONFIG_CONTROLLER_PATH + "/", null, params, agent.getEncode(), TIME_OUT);
             Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
-            
+
             Assert.assertTrue(JacksonUtils.toObj(result.getData()).get("totalCount").intValue() >= 1);
             Assert.assertTrue(JacksonUtils.toObj(result.getData()).get("pageItems").get(0).get("content").textValue()
                     .startsWith(content));
@@ -832,7 +827,7 @@ public class ConfigAPI_CITCase {
             Assert.fail();
         }
     }
-    
+
     /**
      * @TCDescription : nacos_openAPI_模糊查询配置信息
      * @TestStep : 1. 发布配置 2. 查询配置信息
@@ -843,7 +838,7 @@ public class ConfigAPI_CITCase {
     @Test(timeout = 5 * TIME_OUT)
     public void nacos_openAPI_fuzzySearchConfig_1() {
         HttpRestResult<String> result = null;
-        
+
         try {
             final String content = "test123";
             boolean ret = iconfig.publishConfig(dataId, group, content);
@@ -856,17 +851,17 @@ public class ConfigAPI_CITCase {
             params.put("pageSize", "10");
             params.put("search", "blur");
             result = agent.httpGet(CONFIG_CONTROLLER_PATH + "/", null, params, agent.getEncode(), TIME_OUT);
-            
+
             Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
             Assert.assertTrue(JacksonUtils.toObj(result.getData()).get("totalCount").intValue() >= 1);
             Assert.assertEquals(content,
                     JacksonUtils.toObj(result.getData()).get("pageItems").get(0).get("content").textValue());
-            
+
         } catch (Exception e) {
             Assert.fail();
         }
     }
-    
+
     /**
      * @TCDescription : nacos_openAPI_查询配置信息
      * @TestStep : 1. 发布配置 2. 查询配置信息
@@ -877,7 +872,7 @@ public class ConfigAPI_CITCase {
     @Test(timeout = 5 * TIME_OUT)
     public void nacos_openAPI_searchConfig() {
         HttpRestResult<String> result = null;
-        
+
         try {
             final String content = "test123";
             boolean ret = iconfig.publishConfig(dataId, group, content);
@@ -890,17 +885,17 @@ public class ConfigAPI_CITCase {
             params.put("pageSize", "10");
             params.put("search", "accurate");
             result = agent.httpGet(CONFIG_CONTROLLER_PATH + "/", null, params, agent.getEncode(), TIME_OUT);
-            
+
             Assert.assertEquals(HttpURLConnection.HTTP_OK, result.getCode());
             Assert.assertEquals(1, JacksonUtils.toObj(result.getData()).get("totalCount").intValue());
             Assert.assertEquals(content,
                     JacksonUtils.toObj(result.getData()).get("pageItems").get(0).get("content").textValue());
-            
+
         } catch (Exception e) {
             Assert.fail();
         }
     }
-    
+
     /**
      * @TCDescription : nacos_openAPI_查询配置信息，包含中文，utf-8
      * @TestStep : 1. 发布配置 2. 查询配置信息
@@ -911,13 +906,13 @@ public class ConfigAPI_CITCase {
     @Test(timeout = 5 * TIME_OUT)
     public void nacos_openAPI_searchConfig_2() {
         HttpRestResult<String> result = null;
-        
+
         try {
             final String content = "test测试";
             boolean ret = iconfig.publishConfig(dataId, group, content);
             Assert.assertTrue(ret);
             Thread.sleep(TIME_OUT);
-            
+
             Map<String, String> params = new HashMap<>();
             params.put("dataId", dataId);
             params.put("group", group);
@@ -933,5 +928,5 @@ public class ConfigAPI_CITCase {
             Assert.fail();
         }
     }
-    
+
 }

@@ -27,8 +27,8 @@ import com.alibaba.nacos.common.tls.TlsSystemConfig;
 import com.alibaba.nacos.common.utils.BiConsumer;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.protocol.RequestContent;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
+import org.apache.http.protocol.RequestContent;
 import org.slf4j.Logger;
 
 import javax.net.ssl.HostnameVerifier;
@@ -44,12 +44,12 @@ import java.security.NoSuchAlgorithmException;
  * @author mai.jh
  */
 public abstract class AbstractHttpClientFactory implements HttpClientFactory {
-    
+
     @Override
     public NacosRestTemplate createNacosRestTemplate() {
         HttpClientConfig httpClientConfig = buildHttpClientConfig();
         final JdkHttpClientRequest clientRequest = new JdkHttpClientRequest(httpClientConfig);
-        
+
         // enable ssl
         initTls(new BiConsumer<SSLContext, HostnameVerifier>() {
             @Override
@@ -63,10 +63,10 @@ public abstract class AbstractHttpClientFactory implements HttpClientFactory {
                 clientRequest.setSSLContext(loadSSLContext());
             }
         });
-        
+
         return new NacosRestTemplate(assignLogger(), clientRequest);
     }
-    
+
     @Override
     public NacosAsyncRestTemplate createNacosAsyncRestTemplate() {
         final HttpClientConfig originalRequestConfig = buildHttpClientConfig();
@@ -79,12 +79,12 @@ public abstract class AbstractHttpClientFactory implements HttpClientFactory {
                         .setMaxConnPerRoute(originalRequestConfig.getMaxConnPerRoute())
                         .setUserAgent(originalRequestConfig.getUserAgent()).build()));
     }
-    
+
     protected IOReactorConfig getIoReactorConfig() {
         HttpClientConfig httpClientConfig = buildHttpClientConfig();
         return IOReactorConfig.custom().setIoThreadCount(httpClientConfig.getIoThreadCount()).build();
     }
-    
+
     protected RequestConfig getRequestConfig() {
         HttpClientConfig httpClientConfig = buildHttpClientConfig();
         return RequestConfig.custom().setConnectTimeout(httpClientConfig.getConTimeOutMillis())
@@ -93,18 +93,18 @@ public abstract class AbstractHttpClientFactory implements HttpClientFactory {
                 .setContentCompressionEnabled(httpClientConfig.getContentCompressionEnabled())
                 .setMaxRedirects(httpClientConfig.getMaxRedirects()).build();
     }
-    
+
     protected void initTls(BiConsumer<SSLContext, HostnameVerifier> initTlsBiFunc,
             TlsFileWatcher.FileChangeListener tlsChangeListener) {
         if (!TlsSystemConfig.tlsEnable) {
             return;
         }
-        
+
         final HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
         final SelfHostnameVerifier selfHostnameVerifier = new SelfHostnameVerifier(hv);
-        
+
         initTlsBiFunc.accept(loadSSLContext(), selfHostnameVerifier);
-        
+
         if (tlsChangeListener != null) {
             try {
                 TlsFileWatcher.getInstance()
@@ -115,7 +115,7 @@ public abstract class AbstractHttpClientFactory implements HttpClientFactory {
             }
         }
     }
-    
+
     @SuppressWarnings("checkstyle:abbreviationaswordinname")
     protected synchronized SSLContext loadSSLContext() {
         if (!TlsSystemConfig.tlsEnable) {
@@ -130,14 +130,14 @@ public abstract class AbstractHttpClientFactory implements HttpClientFactory {
         }
         return null;
     }
-    
+
     /**
      * build http client config.
      *
      * @return HttpClientConfig
      */
     protected abstract HttpClientConfig buildHttpClientConfig();
-    
+
     /**
      * assign Logger.
      *

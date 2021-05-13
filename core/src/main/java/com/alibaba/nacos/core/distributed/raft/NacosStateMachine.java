@@ -20,8 +20,8 @@ import com.alibaba.nacos.common.notify.NotifyCenter;
 import com.alibaba.nacos.common.utils.ExceptionUtil;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.common.utils.LoggerUtils;
-import com.alibaba.nacos.consistency.RequestProcessor;
 import com.alibaba.nacos.consistency.ProtoMessageUtil;
+import com.alibaba.nacos.consistency.RequestProcessor;
 import com.alibaba.nacos.consistency.cp.RequestProcessor4CP;
 import com.alibaba.nacos.consistency.entity.ReadRequest;
 import com.alibaba.nacos.consistency.entity.Response;
@@ -33,11 +33,8 @@ import com.alibaba.nacos.consistency.snapshot.SnapshotOperation;
 import com.alibaba.nacos.consistency.snapshot.Writer;
 import com.alibaba.nacos.core.distributed.raft.utils.JRaftUtils;
 import com.alibaba.nacos.core.utils.Loggers;
-import com.alipay.sofa.jraft.Closure;
 import com.alipay.sofa.jraft.Iterator;
-import com.alipay.sofa.jraft.Node;
-import com.alipay.sofa.jraft.RouteTable;
-import com.alipay.sofa.jraft.Status;
+import com.alipay.sofa.jraft.*;
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.core.StateMachineAdapter;
 import com.alipay.sofa.jraft.entity.LeaderChangeContext;
@@ -50,14 +47,7 @@ import com.google.protobuf.Message;
 import org.apache.commons.lang3.BooleanUtils;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
@@ -67,30 +57,30 @@ import java.util.function.BiConsumer;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 class NacosStateMachine extends StateMachineAdapter {
-    
+
     protected final JRaftServer server;
-    
+
     protected final RequestProcessor processor;
-    
+
     private final AtomicBoolean isLeader = new AtomicBoolean(false);
-    
+
     private final String groupId;
-    
+
     private Collection<JSnapshotOperation> operations;
-    
+
     private Node node;
-    
+
     private volatile long term = -1;
-    
+
     private volatile String leaderIp = "unknown";
-    
+
     NacosStateMachine(JRaftServer server, RequestProcessor4CP processor) {
         this.server = server;
         this.processor = processor;
         this.groupId = processor.group();
         adapterToJRaftSnapshot(processor.loadSnapshotOperate());
     }
-    
+
     @Override
     public void onApply(Iterator iter) {
         int index = 0;
@@ -108,14 +98,14 @@ class NacosStateMachine extends StateMachineAdapter {
                         final ByteBuffer data = iter.getData();
                         message = ProtoMessageUtil.parse(data.array());
                     }
-                    
+
                     LoggerUtils.printIfDebugEnabled(Loggers.RAFT, "receive log : {}", message);
-                    
+
                     if (message instanceof WriteRequest) {
                         Response response = processor.onApply((WriteRequest) message);
                         postProcessor(response, closure);
                     }
-                    
+
                     if (message instanceof ReadRequest) {
                         Response response = processor.onRequest((ReadRequest) message);
                         postProcessor(response, closure);
@@ -128,7 +118,7 @@ class NacosStateMachine extends StateMachineAdapter {
                 } finally {
                     Optional.ofNullable(closure).ifPresent(closure1 -> closure1.run(status));
                 }
-                
+
                 applied++;
                 index++;
                 iter.next();
@@ -140,11 +130,11 @@ class NacosStateMachine extends StateMachineAdapter {
                             ExceptionUtil.getStackTrace(t)));
         }
     }
-    
+
     public void setNode(Node node) {
         this.node = node;
     }
-    
+
     @Override
     public void onSnapshotSave(SnapshotWriter writer, Closure done) {
         for (JSnapshotOperation operation : operations) {
@@ -157,7 +147,7 @@ class NacosStateMachine extends StateMachineAdapter {
             }
         }
     }
-    
+
     @Override
     public boolean onSnapshotLoad(SnapshotReader reader) {
         for (JSnapshotOperation operation : operations) {
@@ -173,7 +163,7 @@ class NacosStateMachine extends StateMachineAdapter {
         }
         return true;
     }
-    
+
     @Override
     public void onLeaderStart(final long term) {
         super.onLeaderStart(term);
@@ -183,13 +173,13 @@ class NacosStateMachine extends StateMachineAdapter {
         NotifyCenter.publishEvent(
                 RaftEvent.builder().groupId(groupId).leader(leaderIp).term(term).raftClusterInfo(allPeers()).build());
     }
-    
+
     @Override
     public void onLeaderStop(final Status status) {
         super.onLeaderStop(status);
         this.isLeader.set(false);
     }
-    
+
     @Override
     public void onStartFollowing(LeaderChangeContext ctx) {
         this.term = ctx.getTerm();
@@ -198,13 +188,13 @@ class NacosStateMachine extends StateMachineAdapter {
                 RaftEvent.builder().groupId(groupId).leader(leaderIp).term(ctx.getTerm()).raftClusterInfo(allPeers())
                         .build());
     }
-    
+
     @Override
     public void onConfigurationCommitted(Configuration conf) {
         NotifyCenter.publishEvent(
                 RaftEvent.builder().groupId(groupId).raftClusterInfo(JRaftUtils.toStrings(conf.getPeers())).build());
     }
-    
+
     @Override
     public void onError(RaftException e) {
         super.onError(e);
@@ -214,52 +204,52 @@ class NacosStateMachine extends StateMachineAdapter {
                         .errMsg(e.toString())
                         .build());
     }
-    
+
     public boolean isLeader() {
         return isLeader.get();
     }
-    
+
     private List<String> allPeers() {
         if (node == null) {
             return Collections.emptyList();
         }
-        
+
         if (node.isLeader()) {
             return JRaftUtils.toStrings(node.listPeers());
         }
-        
+
         return JRaftUtils.toStrings(RouteTable.getInstance().getConfiguration(node.getGroupId()).getPeers());
     }
-    
+
     private void postProcessor(Response data, NacosClosure closure) {
         if (Objects.nonNull(closure)) {
             closure.setResponse(data);
         }
     }
-    
+
     public long getTerm() {
         return term;
     }
-    
+
     private void adapterToJRaftSnapshot(Collection<SnapshotOperation> userOperates) {
         List<JSnapshotOperation> tmp = new ArrayList<>();
-        
+
         for (SnapshotOperation item : userOperates) {
-            
+
             if (item == null) {
                 Loggers.RAFT.error("Existing SnapshotOperation for null");
                 continue;
             }
-            
+
             tmp.add(new JSnapshotOperation() {
-                
+
                 @Override
                 public void onSnapshotSave(SnapshotWriter writer, Closure done) {
                     final Writer wCtx = new Writer(writer.getPath());
-                    
+
                     // Do a layer of proxy operation to shield different Raft
                     // components from implementing snapshots
-                    
+
                     final BiConsumer<Boolean, Throwable> callFinally = (result, t) -> {
                         boolean[] results = new boolean[wCtx.listFiles().size()];
                         int[] index = new int[] {0};
@@ -277,37 +267,37 @@ class NacosStateMachine extends StateMachineAdapter {
                     };
                     item.onSnapshotSave(wCtx, callFinally);
                 }
-                
+
                 @Override
                 public boolean onSnapshotLoad(SnapshotReader reader) {
                     final Map<String, LocalFileMeta> metaMap = new HashMap<>(reader.listFiles().size());
                     for (String fileName : reader.listFiles()) {
                         final LocalFileMetaOutter.LocalFileMeta meta = (LocalFileMetaOutter.LocalFileMeta) reader
                                 .getFileMeta(fileName);
-                        
+
                         byte[] bytes = meta.getUserMeta().toByteArray();
-                        
+
                         final LocalFileMeta fileMeta;
                         if (bytes == null || bytes.length == 0) {
                             fileMeta = new LocalFileMeta();
                         } else {
                             fileMeta = JacksonUtils.toObj(bytes, LocalFileMeta.class);
                         }
-                        
+
                         metaMap.put(fileName, fileMeta);
                     }
                     final Reader rCtx = new Reader(reader.getPath(), metaMap);
                     return item.onSnapshotLoad(rCtx);
                 }
-                
+
                 @Override
                 public String info() {
                     return item.toString();
                 }
             });
         }
-        
+
         this.operations = Collections.unmodifiableList(tmp);
     }
-    
+
 }

@@ -37,31 +37,24 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HostReactorTest {
-    
+
     private static final String CACHE_DIR = HostReactorTest.class.getResource("/").getPath() + "cache/";
-    
+
     @Mock
     private NamingProxy namingProxy;
-    
+
     private HostReactor hostReactor;
-    
+
     private BeatReactor beatReactor;
-    
+
     @Before
     public void setUp() throws Exception {
         beatReactor = new BeatReactor(namingProxy);
@@ -77,7 +70,7 @@ public class HostReactorTest {
         beatReactor.addBeatInfo("testName", beatInfo);
         hostReactor = new HostReactor(namingProxy, beatReactor, CACHE_DIR);
     }
-    
+
     @Test
     public void testProcessServiceJson() {
         ServiceInfo actual = hostReactor.processServiceJson(EXAMPLE);
@@ -86,14 +79,14 @@ public class HostReactorTest {
         BeatInfo actualBeatInfo = beatReactor.dom2Beat.get(beatReactor.buildKey("testName", "1.1.1.1", 1234));
         assertEquals(2.0, actualBeatInfo.getWeight(), 0.0);
     }
-    
+
     @Test
     public void testGetServiceInfoDirectlyFromServer() throws NacosException {
         when(namingProxy.queryList("testName", "testClusters", 0, false)).thenReturn(EXAMPLE);
         ServiceInfo actual = hostReactor.getServiceInfoDirectlyFromServer("testName", "testClusters");
         assertServiceInfo(actual);
     }
-    
+
     @Test
     public void testSubscribe() throws InterruptedException {
         final AtomicInteger count = new AtomicInteger(1);
@@ -115,11 +108,11 @@ public class HostReactorTest {
         Assert.assertEquals(0, count.intValue());
         hostReactor.unSubscribe("testName", "testClusters", eventListener);
     }
-    
+
     @Test
     public void testAsyncSubscribe() throws InterruptedException {
         final AtomicInteger count = new AtomicInteger(1);
-        
+
         ThreadFactory threadFactory = new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -128,16 +121,16 @@ public class HostReactorTest {
                 return thread;
             }
         };
-        
+
         final Executor executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(), threadFactory);
         EventListener eventListener = new AbstractEventListener() {
-            
+
             @Override
             public Executor getExecutor() {
                 return executor;
             }
-            
+
             @Override
             public void onEvent(Event event) {
                 if (event instanceof NamingEvent) {
@@ -154,7 +147,7 @@ public class HostReactorTest {
         Assert.assertEquals(0, count.intValue());
         hostReactor.unSubscribe("testName", "testClusters", eventListener);
     }
-    
+
     @Test
     public void testUnsubscribe() throws InterruptedException {
         Thread.sleep(1000);
@@ -167,15 +160,15 @@ public class HostReactorTest {
         };
         hostReactor.subscribe("testName", "testClusters", eventListener);
         hostReactor.processServiceJson(EXAMPLE);
-        
+
         Thread.sleep(1000);
-        
+
         hostReactor.unSubscribe("testName", "testClusters", eventListener);
         hostReactor.processServiceJson(CHANGE_DATA_EXAMPLE);
-        
+
         Assert.assertEquals(0, count.intValue());
     }
-    
+
     @Test
     public void testGetSubscribeServices() {
         EventListener listener = new EventListener() {
@@ -184,16 +177,16 @@ public class HostReactorTest {
             }
         };
         hostReactor.subscribe("testGroup@@testName", "testClusters", listener);
-        
+
         Assert.assertEquals(1, hostReactor.getSubscribeServices().size());
         Assert.assertEquals("testName", hostReactor.getSubscribeServices().get(0).getName());
         Assert.assertEquals("testGroup", hostReactor.getSubscribeServices().get(0).getGroupName());
         Assert.assertEquals("testClusters", hostReactor.getSubscribeServices().get(0).getClusters());
-        
+
         hostReactor.unSubscribe("testGroup@@testName", "testClusters", listener);
         Assert.assertEquals(0, hostReactor.getSubscribeServices().size());
     }
-    
+
     private void assertServiceInfo(ServiceInfo actual) {
         assertEquals("testName", actual.getName());
         assertEquals("testClusters", actual.getClusters());
@@ -206,14 +199,14 @@ public class HostReactorTest {
         assertEquals(1, actual.getHosts().size());
         assertInstance(actual.getHosts().get(0));
     }
-    
+
     private void assertInstance(Instance actual) {
         assertEquals("1.1.1.1", actual.getIp());
         assertEquals("testClusters", actual.getClusterName());
         assertEquals("testName", actual.getServiceName());
         assertEquals(1234, actual.getPort());
     }
-    
+
     private static final String EXAMPLE =
             "{\n" + "\t\"name\": \"testName\",\n" + "\t\"clusters\": \"testClusters\",\n" + "\t\"cacheMillis\": 1000,\n"
                     + "\t\"hosts\": [{\n" + "\t\t\"ip\": \"1.1.1.1\",\n" + "\t\t\"port\": 1234,\n"
@@ -224,7 +217,7 @@ public class HostReactorTest {
                     + "\t\t\"ipDeleteTimeout\": 30000,\n" + "\t\t\"instanceIdGenerator\": \"simple\"\n" + "\t}],\n"
                     + "\t\"lastRefTime\": 0,\n" + "\t\"checksum\": \"\",\n" + "\t\"allIPs\": false,\n"
                     + "\t\"valid\": true\n" + "}";
-    
+
     //the weight changed from 1.0 to 2.0
     private static final String CHANGE_DATA_EXAMPLE =
             "{\n" + "\t\"name\": \"testName\",\n" + "\t\"clusters\": \"testClusters\",\n" + "\t\"cacheMillis\": 1000,\n"

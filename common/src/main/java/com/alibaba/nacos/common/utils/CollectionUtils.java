@@ -17,11 +17,7 @@
 package com.alibaba.nacos.common.utils;
 
 import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Copy from {@link org.apache.commons.collections}.
@@ -29,7 +25,7 @@ import java.util.Map;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public final class CollectionUtils {
-    
+
     /**
      * Returns the <code>index</code>-th value in <code>object</code>, throwing
      * <code>IndexOutOfBoundsException</code> if there is no such element or
@@ -107,7 +103,7 @@ public final class CollectionUtils {
             }
         }
     }
-    
+
     /**
      * Gets the size of the collection/iterator specified.
      *
@@ -156,7 +152,7 @@ public final class CollectionUtils {
         }
         return total;
     }
-    
+
     /**
      * Judge whether object is empty.
      *
@@ -185,7 +181,7 @@ public final class CollectionUtils {
             }
         }
     }
-    
+
     /**
      * Whether contain item in collection.
      *
@@ -200,7 +196,7 @@ public final class CollectionUtils {
         }
         return coll.contains(target);
     }
-    
+
     /**
      * Null-safe check if the specified collection is empty.
      *
@@ -213,7 +209,7 @@ public final class CollectionUtils {
     public static boolean isEmpty(Collection coll) {
         return (coll == null || coll.isEmpty());
     }
-    
+
     /**
      * Null-safe check if the specified collection is not empty.
      *
@@ -226,7 +222,7 @@ public final class CollectionUtils {
     public static boolean isNotEmpty(Collection coll) {
         return !CollectionUtils.isEmpty(coll);
     }
-    
+
     /**
      * Returns the value to which the specified index , or {@code defaultValue} if this collection contains no value for
      * the index.

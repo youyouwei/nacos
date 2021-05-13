@@ -29,13 +29,11 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import javax.annotation.Resource;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,14 +46,17 @@ import java.util.concurrent.TimeUnit;
 @SpringBootTest(classes = Nacos.class, properties = {
         "server.servlet.context-path=/nacos"}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RegisterInstance_ITCase {
-    
+
     private NamingService naming;
-    
+
     @Value("${server.servlet.context-path}")
     private String contextPath;
-    
+
     @LocalServerPort
     private int port;
+
+    @Resource
+    private Environment environment;
 
     @Before
     public void init() throws Exception {
@@ -79,6 +80,18 @@ public class RegisterInstance_ITCase {
         }
     }
 
+    /**
+     * jfy 客户端注册自身的serverName IP port clusterName给服务端，
+     * 客户端注册有多个重载方法，默认Group是DEFAULT_GROUP
+     * 初始化instance信息
+     * 创建心跳任务，客户端通过把心跳信息封装成任务，然后通过定时任务发送心跳给服务端
+     * 封装客户端instance信息发送给服务端
+     *
+     * 注：客户端和服务端的通信都是通过http进行的
+     *
+     * @throws NacosException
+     * @throws InterruptedException
+     */
     @Test
     public void regService() throws NacosException, InterruptedException {
 

@@ -22,32 +22,28 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.AbstractListener;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.common.utils.ThreadUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Ignore
 public class ConfigTest {
-    
+
     private static ConfigService configService;
-    
+
     @Before
     public void before() throws Exception {
         Properties properties = new Properties();
         properties.setProperty(PropertyKeyConst.SERVER_ADDR, "127.0.0.1:8848");
         configService = NacosFactory.createConfigService(properties);
     }
-    
+
     @After
     public void cleanup() throws Exception {
         configService.shutDown();
     }
-    
+
     @Test
     public void test() throws Exception {
         // set config
@@ -56,9 +52,9 @@ public class ConfigTest {
         final String content = "lessspring-" + System.currentTimeMillis();
         boolean result = configService.publishConfig(dataId, group, content);
         Assert.assertTrue(result);
-        
+
         ThreadUtils.sleep(10000L);
-        
+
         // set change listener
         final AtomicBoolean hasListener = new AtomicBoolean(false);
         final AtomicBoolean hasChangedCallback = new AtomicBoolean(false);
@@ -73,7 +69,7 @@ public class ConfigTest {
         });
         hasListener.set(true);
         Assert.assertEquals(content, response);
-        
+
         // new thread to publish config
         final String newRawContent = "nacosnewconfig-" + System.currentTimeMillis();
         new Thread(new Runnable() {
@@ -90,7 +86,7 @@ public class ConfigTest {
                 }
             }
         }).start();
-        
+
         // spin
         do {
             if (hasChangedCallback.get()) {
@@ -100,5 +96,5 @@ public class ConfigTest {
             }
         } while (!hasChangedCallback.get());
     }
-    
+
 }

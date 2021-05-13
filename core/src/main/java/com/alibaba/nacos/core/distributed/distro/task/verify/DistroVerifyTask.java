@@ -16,9 +16,9 @@
 
 package com.alibaba.nacos.core.distributed.distro.task.verify;
 
+import com.alibaba.nacos.consistency.DataOperation;
 import com.alibaba.nacos.core.cluster.Member;
 import com.alibaba.nacos.core.cluster.ServerMemberManager;
-import com.alibaba.nacos.consistency.DataOperation;
 import com.alibaba.nacos.core.distributed.distro.component.DistroComponentHolder;
 import com.alibaba.nacos.core.distributed.distro.entity.DistroData;
 import com.alibaba.nacos.core.utils.Loggers;
@@ -31,16 +31,16 @@ import java.util.List;
  * @author xiweng.yy
  */
 public class DistroVerifyTask implements Runnable {
-    
+
     private final ServerMemberManager serverMemberManager;
-    
+
     private final DistroComponentHolder distroComponentHolder;
-    
+
     public DistroVerifyTask(ServerMemberManager serverMemberManager, DistroComponentHolder distroComponentHolder) {
         this.serverMemberManager = serverMemberManager;
         this.distroComponentHolder = distroComponentHolder;
     }
-    
+
     @Override
     public void run() {
         try {
@@ -55,7 +55,7 @@ public class DistroVerifyTask implements Runnable {
             Loggers.DISTRO.error("[DISTRO-FAILED] verify task failed.", e);
         }
     }
-    
+
     private void verifyForDataStorage(String type, List<Member> targetServer) {
         DistroData distroData = distroComponentHolder.findDataStorage(type).getVerifyData();
         if (null == distroData) {

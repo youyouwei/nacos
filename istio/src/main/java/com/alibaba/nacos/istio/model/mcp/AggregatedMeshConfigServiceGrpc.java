@@ -2,18 +2,8 @@ package com.alibaba.nacos.istio.model.mcp;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
@@ -46,7 +36,7 @@ public final class AggregatedMeshConfigServiceGrpc {
     if ((getStreamAggregatedResourcesMethod = AggregatedMeshConfigServiceGrpc.getStreamAggregatedResourcesMethod) == null) {
       synchronized (AggregatedMeshConfigServiceGrpc.class) {
         if ((getStreamAggregatedResourcesMethod = AggregatedMeshConfigServiceGrpc.getStreamAggregatedResourcesMethod) == null) {
-          AggregatedMeshConfigServiceGrpc.getStreamAggregatedResourcesMethod = getStreamAggregatedResourcesMethod = 
+          AggregatedMeshConfigServiceGrpc.getStreamAggregatedResourcesMethod = getStreamAggregatedResourcesMethod =
               io.grpc.MethodDescriptor.<com.alibaba.nacos.istio.model.mcp.MeshConfigRequest, com.alibaba.nacos.istio.model.mcp.MeshConfigResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
               .setFullMethodName(generateFullMethodName(
@@ -78,7 +68,7 @@ public final class AggregatedMeshConfigServiceGrpc {
     if ((getIncrementalAggregatedResourcesMethod = AggregatedMeshConfigServiceGrpc.getIncrementalAggregatedResourcesMethod) == null) {
       synchronized (AggregatedMeshConfigServiceGrpc.class) {
         if ((getIncrementalAggregatedResourcesMethod = AggregatedMeshConfigServiceGrpc.getIncrementalAggregatedResourcesMethod) == null) {
-          AggregatedMeshConfigServiceGrpc.getIncrementalAggregatedResourcesMethod = getIncrementalAggregatedResourcesMethod = 
+          AggregatedMeshConfigServiceGrpc.getIncrementalAggregatedResourcesMethod = getIncrementalAggregatedResourcesMethod =
               io.grpc.MethodDescriptor.<com.alibaba.nacos.istio.model.mcp.IncrementalMeshConfigRequest, com.alibaba.nacos.istio.model.mcp.IncrementalMeshConfigResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
               .setFullMethodName(generateFullMethodName(

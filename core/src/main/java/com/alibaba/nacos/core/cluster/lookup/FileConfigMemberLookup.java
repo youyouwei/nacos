@@ -20,11 +20,11 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.core.cluster.AbstractMemberLookup;
 import com.alibaba.nacos.core.cluster.Member;
 import com.alibaba.nacos.core.cluster.MemberUtils;
+import com.alibaba.nacos.core.utils.Loggers;
 import com.alibaba.nacos.sys.env.EnvUtil;
 import com.alibaba.nacos.sys.file.FileChangeEvent;
 import com.alibaba.nacos.sys.file.FileWatcher;
 import com.alibaba.nacos.sys.file.WatchFileCenter;
-import com.alibaba.nacos.core.utils.Loggers;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -37,24 +37,24 @@ import java.util.List;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public class FileConfigMemberLookup extends AbstractMemberLookup {
-    
+
     private FileWatcher watcher = new FileWatcher() {
         @Override
         public void onChange(FileChangeEvent event) {
             readClusterConfFromDisk();
         }
-        
+
         @Override
         public boolean interest(String context) {
             return StringUtils.contains(context, "cluster.conf");
         }
     };
-    
+
     @Override
     public void start() throws NacosException {
         if (start.compareAndSet(false, true)) {
             readClusterConfFromDisk();
-            
+
             // Use the inotify mechanism to monitor file changes and automatically
             // trigger the reading of cluster.conf
             try {
@@ -64,12 +64,12 @@ public class FileConfigMemberLookup extends AbstractMemberLookup {
             }
         }
     }
-    
+
     @Override
     public void destroy() throws NacosException {
         WatchFileCenter.deregisterWatcher(EnvUtil.getConfPath(), watcher);
     }
-    
+
     private void readClusterConfFromDisk() {
         Collection<Member> tmpMembers = new ArrayList<>();
         try {
@@ -79,7 +79,7 @@ public class FileConfigMemberLookup extends AbstractMemberLookup {
             Loggers.CLUSTER
                     .error("nacos-XXXX [serverlist] failed to get serverlist from disk!, error : {}", e.getMessage());
         }
-        
+
         afterLookup(tmpMembers);
     }
 }
